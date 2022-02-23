@@ -15,6 +15,7 @@ namespace Paint
         Line,
         Rectangle,
         Pen,
+        Text,
         Eraser,
         Circle,
         Clear,
@@ -32,16 +33,14 @@ namespace Paint
         Point currentPoint = default(Point);
         bool isMousePressed = false;
         Tool currentTool = Tool.Line;
-
-
+        
         public Form1()
         {
             InitializeComponent();
             bitmap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             graphics = Graphics.FromImage(bitmap);
             graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
-           
+            graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;           
             
             pictureBox1.Image = bitmap;
             graphics.Clear(Color.White);
@@ -101,8 +100,6 @@ namespace Paint
             isMousePressed = true;
         }
 
-
-
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
         {
             isMousePressed = false;
@@ -116,6 +113,32 @@ namespace Paint
                     graphics.DrawRectangle(pen, GetMRectangle(prevPoint, currentPoint));
                     break;
                 case Tool.Pen:
+                    break;
+                case Tool.Text:
+                    TextBox textBox = new TextBox();
+                    textBox.Location = currentPoint;
+                    textBox.Size = new Size(50, (int)pen.Width);
+                    textBox.Font = new Font("Microsoft Sans Serif", pen.Width, FontStyle.Regular, GraphicsUnit.Point, 204);
+                    textBox.KeyDown += (o, args) =>
+                    {
+                        if (args.KeyCode == Keys.Enter)
+                        {
+                            graphics.DrawString(textBox.Text, textBox.Font, new SolidBrush(button7.BackColor),
+                                new RectangleF(textBox.Location.X, textBox.Location.Y, textBox.Width, textBox.Height));
+                            pictureBox1.Refresh();
+                            Controls.Remove(textBox);
+                        }
+                    };
+                    textBox.Leave += (o, args) =>
+                    {
+                        graphics.DrawString(textBox.Text, textBox.Font, new SolidBrush(button7.BackColor),
+                            new RectangleF(textBox.Location.X, textBox.Location.Y, textBox.Width, textBox.Height));
+                        pictureBox1.Refresh();
+                        Controls.Remove(textBox);
+                    };
+                    Controls.Add(textBox);
+                    textBox.Select();
+                    textBox.BringToFront();
                     break;
                 case Tool.Circle:
                     graphics.DrawEllipse(pen, GetMRectangle(prevPoint, currentPoint));
@@ -131,6 +154,7 @@ namespace Paint
                     currentPoint = e.Location;
                     Color pixelColor = bitmap.GetPixel(currentPoint.X, currentPoint.Y);
                     pen.Color = pixelColor;
+                    button7.BackColor = pixelColor;
                     /*pictureBox1.Refresh();*/
                     break;
                 default:
@@ -260,6 +284,11 @@ namespace Paint
         private void button10_Click(object sender, EventArgs e)
         {
             currentTool = Tool.Pipette;
+        }
+
+        private void button8_Click(object sender, EventArgs e)
+        {
+            currentTool = Tool.Text;
         }
     }
 }
