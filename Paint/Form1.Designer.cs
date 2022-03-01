@@ -62,6 +62,8 @@ namespace Paint
             this.button10 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.button8 = new System.Windows.Forms.Button();
+            this.справкаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
@@ -101,6 +103,8 @@ namespace Paint
             this.открытьToolStripMenuItem,
             this.toolStripSeparator,
             this.сохранитьToolStripMenuItem,
+            this.toolStripSeparator2,
+            this.справкаToolStripMenuItem,
             this.toolStripSeparator1,
             this.выходToolStripMenuItem});
             this.файлToolStripMenuItem.Name = "файлToolStripMenuItem";
@@ -114,7 +118,7 @@ namespace Paint
             this.создатьToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.создатьToolStripMenuItem.Name = "создатьToolStripMenuItem";
             this.создатьToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.создатьToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.создатьToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.создатьToolStripMenuItem.Text = "&Создать";
             // 
             // открытьToolStripMenuItem
@@ -152,6 +156,7 @@ namespace Paint
             this.выходToolStripMenuItem.Name = "выходToolStripMenuItem";
             this.выходToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.выходToolStripMenuItem.Text = "Вы&ход";
+            this.выходToolStripMenuItem.Click += new System.EventHandler(this.выходToolStripMenuItem_Click);
             // 
             // правкаToolStripMenuItem
             // 
@@ -171,6 +176,7 @@ namespace Paint
             this.отменадействияToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
             this.отменадействияToolStripMenuItem.Size = new System.Drawing.Size(209, 22);
             this.отменадействияToolStripMenuItem.Text = "&Отмена действия";
+            this.отменадействияToolStripMenuItem.Click += new System.EventHandler(this.отменадействияToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
@@ -202,6 +208,7 @@ namespace Paint
             // 
             // button1
             // 
+            this.button1.Cursor = System.Windows.Forms.Cursors.Hand;
             this.button1.Location = new System.Drawing.Point(3, 60);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(82, 26);
@@ -212,6 +219,7 @@ namespace Paint
             // 
             // button2
             // 
+            this.button2.Cursor = System.Windows.Forms.Cursors.Hand;
             this.button2.Location = new System.Drawing.Point(3, 92);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(82, 26);
@@ -222,6 +230,7 @@ namespace Paint
             // 
             // button3
             // 
+            this.button3.Cursor = System.Windows.Forms.Cursors.Hand;
             this.button3.Location = new System.Drawing.Point(3, 124);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(82, 26);
@@ -253,7 +262,7 @@ namespace Paint
             // 
             // button4
             // 
-            this.button4.Cursor = System.Windows.Forms.Cursors.Default;
+            this.button4.Cursor = System.Windows.Forms.Cursors.Hand;
             this.button4.Location = new System.Drawing.Point(3, 307);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(82, 26);
@@ -264,6 +273,7 @@ namespace Paint
             // 
             // button5
             // 
+            this.button5.Cursor = System.Windows.Forms.Cursors.Hand;
             this.button5.Location = new System.Drawing.Point(3, 156);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(82, 26);
@@ -274,6 +284,7 @@ namespace Paint
             // 
             // button6
             // 
+            this.button6.Cursor = System.Windows.Forms.Cursors.Hand;
             this.button6.Location = new System.Drawing.Point(3, 339);
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(82, 26);
@@ -284,6 +295,7 @@ namespace Paint
             // 
             // button7
             // 
+            this.button7.Cursor = System.Windows.Forms.Cursors.Hand;
             this.button7.Location = new System.Drawing.Point(3, 422);
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(82, 26);
@@ -309,7 +321,7 @@ namespace Paint
             this.numericUpDown1.Size = new System.Drawing.Size(82, 20);
             this.numericUpDown1.TabIndex = 11;
             this.numericUpDown1.Value = new decimal(new int[] {
-            2,
+            8,
             0,
             0,
             0});
@@ -317,6 +329,7 @@ namespace Paint
             // 
             // button9
             // 
+            this.button9.Cursor = System.Windows.Forms.Cursors.Hand;
             this.button9.Location = new System.Drawing.Point(3, 188);
             this.button9.Name = "button9";
             this.button9.Size = new System.Drawing.Size(82, 26);
@@ -327,6 +340,7 @@ namespace Paint
             // 
             // button10
             // 
+            this.button10.Cursor = System.Windows.Forms.Cursors.Hand;
             this.button10.Location = new System.Drawing.Point(3, 275);
             this.button10.Name = "button10";
             this.button10.Size = new System.Drawing.Size(82, 26);
@@ -346,6 +360,7 @@ namespace Paint
             // 
             // button8
             // 
+            this.button8.Cursor = System.Windows.Forms.Cursors.Hand;
             this.button8.Location = new System.Drawing.Point(3, 220);
             this.button8.Name = "button8";
             this.button8.Size = new System.Drawing.Size(82, 26);
@@ -353,6 +368,18 @@ namespace Paint
             this.button8.Text = "Текст";
             this.button8.UseVisualStyleBackColor = true;
             this.button8.Click += new System.EventHandler(this.button8_Click);
+            // 
+            // справкаToolStripMenuItem
+            // 
+            this.справкаToolStripMenuItem.Name = "справкаToolStripMenuItem";
+            this.справкаToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F1;
+            this.справкаToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.справкаToolStripMenuItem.Text = "Справка";
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
             // 
             // Form1
             // 
@@ -424,6 +451,8 @@ namespace Paint
         private System.Windows.Forms.Button button10;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button8;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripMenuItem справкаToolStripMenuItem;
     }
 }
 

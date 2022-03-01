@@ -35,7 +35,6 @@ namespace Paint
             return DeleteObject(hObject);
         }
 
-
         [System.Runtime.InteropServices.DllImportAttribute("gdi32.dll")]
         private static extern IntPtr CreateSolidBrush(uint crColor);
 

@@ -33,6 +33,7 @@ namespace Paint
         Point currentPoint = default(Point);
         bool isMousePressed = false;
         Tool currentTool = Tool.Line;
+        List<Graphics> drawHistory = new List<Graphics>();
         
         public Form1()
         {
@@ -44,6 +45,7 @@ namespace Paint
             
             pictureBox1.Image = bitmap;
             graphics.Clear(Color.White);
+            drawHistory.Add(graphics);
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -81,6 +83,7 @@ namespace Paint
                     case Tool.Eraser:
                         prevPoint = currentPoint;
                         currentPoint = e.Location;
+                        eraser.Width = (float) numericUpDown1.Value;
                         graphics.DrawLine(eraser, prevPoint, currentPoint);
                         break;
                     case Tool.Circle:
@@ -90,6 +93,7 @@ namespace Paint
                         break;
                 }
                 pictureBox1.Refresh();
+                drawHistory.Add(graphics);
             }
         }
 
@@ -123,16 +127,16 @@ namespace Paint
                     {
                         if (args.KeyCode == Keys.Enter)
                         {
-                            graphics.DrawString(textBox.Text, textBox.Font, new SolidBrush(button7.BackColor),
-                                new RectangleF(textBox.Location.X, textBox.Location.Y, textBox.Width, textBox.Height));
+                            graphics.DrawString(textBox.Text, textBox.Font, new SolidBrush(color),
+                                new RectangleF(textBox.Location.X, textBox.Location.Y, textBox.TextLength * (int)pen.Width, textBox.Height));
                             pictureBox1.Refresh();
                             Controls.Remove(textBox);
                         }
                     };
                     textBox.Leave += (o, args) =>
                     {
-                        graphics.DrawString(textBox.Text, textBox.Font, new SolidBrush(button7.BackColor),
-                            new RectangleF(textBox.Location.X, textBox.Location.Y, textBox.Width, textBox.Height));
+                        graphics.DrawString(textBox.Text, textBox.Font, new SolidBrush(color),
+                            new RectangleF(textBox.Location.X, textBox.Location.Y, textBox.TextLength * (int)pen.Width, textBox.Height));
                         pictureBox1.Refresh();
                         Controls.Remove(textBox);
                     };
@@ -161,6 +165,7 @@ namespace Paint
                     break;
             }
             prevPoint = e.Location;
+            drawHistory.Add(graphics);
         }
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
@@ -183,6 +188,7 @@ namespace Paint
                 default:
                     break;
             }
+            drawHistory.Add(graphics);
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -239,7 +245,6 @@ namespace Paint
                           System.Drawing.Imaging.ImageFormat.Gif);
                         break;
                 }
-
                 fs.Close();
             }
         }
@@ -257,6 +262,7 @@ namespace Paint
         private void button6_Click(object sender, EventArgs e)
         {
             graphics.Clear(Color.White);
+            drawHistory.Add(graphics);
             pictureBox1.Refresh();
         }
 
@@ -289,6 +295,20 @@ namespace Paint
         private void button8_Click(object sender, EventArgs e)
         {
             currentTool = Tool.Text;
+        }
+
+        private void выходToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void отменадействияToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            drawHistory.RemoveAt(drawHistory.Count - 1);
+            //Console.WriteLine(drawHistory);
+            graphics = drawHistory.Last();
+            pictureBox1.Refresh();
+            //Console.WriteLine(pictureBox1.Image == drawHistory.Last());
         }
     }
 }
