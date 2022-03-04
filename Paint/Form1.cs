@@ -12,6 +12,7 @@ namespace Paint
 { 
     enum Tool
     {
+        Selection,
         Line,
         Rectangle,
         Pen,
@@ -33,19 +34,49 @@ namespace Paint
         Point currentPoint = default(Point);
         bool isMousePressed = false;
         Tool currentTool = Tool.Line;
-        List<Graphics> drawHistory = new List<Graphics>();
-        
+        Stack<Bitmap> drawHistory = new Stack<Bitmap>();
+
+        private Point firstSelectionPoint, lastSelectionPoint;
+        private Bitmap selectedImage;
+        private Graphics selectedGraphics;
+        private Rectangle selectedRectangle;
+
         public Form1()
         {
             InitializeComponent();
             bitmap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
             graphics = Graphics.FromImage(bitmap);
             graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;           
-            
+            graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+
             pictureBox1.Image = bitmap;
             graphics.Clear(Color.White);
-            drawHistory.Add(graphics);
+            saveDrawInHistory(new Bitmap(bitmap));
+        }
+
+        private void saveDrawInHistory(Bitmap bitmap)
+        {
+            drawHistory.Push(bitmap);
+            /* TODO - кода нибудь
+            if (drawHistory.Count < 5) return;
+            var array = drawHistory.ToArray();
+            array.Skip(Math.Max(0,array.Length-5));
+            drawHistory = new Stack<Bitmap>(array);
+            */
+        }
+
+        private void CopyToClipboard(Rectangle src_rect)
+        {
+            Bitmap bm = new Bitmap(src_rect.Width, src_rect.Height);
+
+            using (Graphics gr = Graphics.FromImage(bm))
+            {
+                Rectangle dest_rect =
+                    new Rectangle(0, 0, src_rect.Width, src_rect.Height);
+                gr.DrawImage(bitmap, dest_rect, src_rect,
+                    GraphicsUnit.Pixel);
+            }
+            Clipboard.SetImage(bm);
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -78,7 +109,12 @@ namespace Paint
                     case Tool.Pen:
                         prevPoint = currentPoint;
                         currentPoint = e.Location;
-                        graphics.DrawLine(pen, prevPoint, currentPoint);
+                        int pw2 = (int)Math.Max(1, pen.Width / 2);
+                        using (var brush = new SolidBrush(pen.Color))
+                        {
+                            graphics.FillRectangle(brush, currentPoint.X - pw2, currentPoint.Y - pw2, pen.Width, pen.Width);
+                        }
+                        //graphics.DrawLine(pen, prevPoint, currentPoint);
                         break;
                     case Tool.Eraser:
                         prevPoint = currentPoint;
@@ -89,11 +125,27 @@ namespace Paint
                     case Tool.Circle:
                         currentPoint = e.Location;
                         break;
+                    case Tool.Selection:
+                        lastSelectionPoint = e.Location;
+
+                        selectedGraphics.DrawImage(bitmap, 0, 0);
+
+                        using (Pen pen = new Pen(Color.Red))
+                        {
+                            pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+                            Rectangle rectangle = new Rectangle(
+                                            Math.Min(firstSelectionPoint.X, lastSelectionPoint.X),
+                                            Math.Min(firstSelectionPoint.Y, lastSelectionPoint.Y),
+                                            Math.Abs(firstSelectionPoint.X - lastSelectionPoint.X),
+                                            Math.Abs(firstSelectionPoint.Y - lastSelectionPoint.Y));
+                            selectedGraphics.DrawRectangle(pen, rectangle);
+                        }
+                        pictureBox1.Refresh();
+                        break;
                     default:
                         break;
                 }
                 pictureBox1.Refresh();
-                drawHistory.Add(graphics);
             }
         }
 
@@ -102,6 +154,18 @@ namespace Paint
             prevPoint = e.Location;
             currentPoint = e.Location;
             isMousePressed = true;
+            if (currentTool != Tool.Pipette)
+            {
+                saveDrawInHistory(new Bitmap(bitmap));
+            }
+            if (currentTool == Tool.Selection)
+            {
+                firstSelectionPoint = e.Location;
+                
+                selectedImage = new Bitmap(bitmap);
+                selectedGraphics = Graphics.FromImage(selectedImage);
+                pictureBox1.Image = selectedImage;
+            }
         }
 
         private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
@@ -161,11 +225,26 @@ namespace Paint
                     button7.BackColor = pixelColor;
                     /*pictureBox1.Refresh();*/
                     break;
+                case Tool.Selection:
+                    selectedImage = null;
+                    selectedGraphics = null;
+                    pictureBox1.Image = bitmap;
+                    pictureBox1.Refresh();
+
+                    Rectangle rectangle = new Rectangle(
+                                            Math.Min(firstSelectionPoint.X, lastSelectionPoint.X),
+                                            Math.Min(firstSelectionPoint.Y, lastSelectionPoint.Y),
+                                            Math.Abs(firstSelectionPoint.X - lastSelectionPoint.X),
+                                            Math.Abs(firstSelectionPoint.Y - lastSelectionPoint.Y));
+                    if ((rectangle.Width > 0) && (rectangle.Height > 0))
+                    {
+                        selectedRectangle = rectangle;
+                    }
+                    break;
                 default:
                     break;
             }
             prevPoint = e.Location;
-            drawHistory.Add(graphics);
         }
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
@@ -188,7 +267,6 @@ namespace Paint
                 default:
                     break;
             }
-            drawHistory.Add(graphics);
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -215,6 +293,7 @@ namespace Paint
         {
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
+                saveDrawInHistory(new Bitmap(bitmap));
                 bitmap = Bitmap.FromFile(openFileDialog1.FileName) as Bitmap;
                 pictureBox1.Image = bitmap;
                 graphics = Graphics.FromImage(bitmap);
@@ -261,8 +340,8 @@ namespace Paint
 
         private void button6_Click(object sender, EventArgs e)
         {
+            saveDrawInHistory(new Bitmap(bitmap));
             graphics.Clear(Color.White);
-            drawHistory.Add(graphics);
             pictureBox1.Refresh();
         }
 
@@ -304,11 +383,86 @@ namespace Paint
 
         private void отменадействияToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            drawHistory.RemoveAt(drawHistory.Count - 1);
-            //Console.WriteLine(drawHistory);
-            graphics = drawHistory.Last();
+            if (drawHistory.Count < 1) return;
+            bitmap = drawHistory.Pop();   
+            graphics = Graphics.FromImage(bitmap);
+            pictureBox1.Image = bitmap;
             pictureBox1.Refresh();
-            //Console.WriteLine(pictureBox1.Image == drawHistory.Last());
+        }
+
+        private void отменаВыделенияToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Stop selecting.
+            selectedImage = null;
+            selectedGraphics = null;
+            pictureBox1.Image = bitmap;
+            pictureBox1.Refresh();
+        }
+
+        private void копироватьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if ((selectedRectangle.Width < 1) && (selectedRectangle.Height < 1))
+            {
+                MessageBox.Show("Невозможно копировать, выделите область копирования!");
+                return;
+            }                
+            CopyToClipboard(selectedRectangle);
+            selectedRectangle.Width = 0;
+            selectedRectangle.Height = 0;
+            System.Media.SystemSounds.Beep.Play();
+        }
+
+        private void вырезатьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            CopyToClipboard(selectedRectangle);
+
+            using (Graphics gr = Graphics.FromImage(bitmap))
+            {
+                using (SolidBrush br = new SolidBrush(pictureBox1.BackColor))
+                {
+                    gr.FillRectangle(br, selectedRectangle);
+                }
+            }
+
+            selectedImage = new Bitmap(bitmap);
+            pictureBox1.Image = selectedImage;
+
+            selectedImage = null;
+            selectedGraphics = null;
+
+            System.Media.SystemSounds.Beep.Play();
+        }
+
+        private void вставкаToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!Clipboard.ContainsImage()) return;
+
+            Image clipboard_image = Clipboard.GetImage();
+
+            int cx = selectedRectangle.X +
+                (selectedRectangle.Width - clipboard_image.Width) / 2;
+            int cy = selectedRectangle.Y +
+                (selectedRectangle.Height - clipboard_image.Height) / 2;
+            Rectangle dest_rect = new Rectangle(
+                cx, cy,
+                clipboard_image.Width,
+                clipboard_image.Height);
+
+            using (Graphics gr = Graphics.FromImage(bitmap))
+            {
+                gr.DrawImage(clipboard_image, dest_rect);
+            }
+
+            pictureBox1.Image = bitmap;
+            pictureBox1.Refresh();
+
+            selectedImage = null;
+            selectedGraphics = null;
+        }
+
+        private void button11_Click(object sender, EventArgs e)
+        {
+            currentTool = Tool.Selection;
         }
     }
 }
