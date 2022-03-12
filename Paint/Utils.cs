@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +11,20 @@ namespace Paint
 {
     class Utils
     {
+        [SettingsBindable(true)]
+        public static string ProjectName { get; set; } = "";
+        public static string ResourcesDirectory { get; set; } = Directory.GetParent(Environment.CurrentDirectory)?.Parent?.Parent?.FullName;
+
+        public static string getResourcesPatch(String file)
+        {
+            return $"{ResourcesDirectory}/{ProjectName} {file.Insert(0, "/Resources/")}";
+        }
+
+        public static Bitmap getResourceImage(String file)
+        {
+            return Image.FromFile(getResourcesPatch(file)) as Bitmap;
+        }
+
         static void Step(
             int x,
             int y,

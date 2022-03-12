@@ -26,10 +26,11 @@ namespace Paint
     public partial class Form1 : Form
     {
         Bitmap bitmap = default(Bitmap);
+        public Bitmap patternImage = default(Bitmap);
         Graphics graphics = default(Graphics);
         Pen pen = new Pen(Color.Black);
         Pen eraser = new Pen(Color.White, 10);
-        Color color = default(Color);
+        Color color = Color.Black;
         Point prevPoint = default(Point);
         Point currentPoint = default(Point);
         bool isMousePressed = false;
@@ -40,6 +41,7 @@ namespace Paint
         private Bitmap selectedImage;
         private Graphics selectedGraphics;
         private Rectangle selectedRectangle;
+        private static Form1 INSTANCE;
 
         public Form1()
         {
@@ -52,7 +54,10 @@ namespace Paint
             pictureBox1.Image = bitmap;
             graphics.Clear(Color.White);
             saveDrawInHistory(new Bitmap(bitmap));
+            INSTANCE = this;
         }
+
+        public static Form1 get() {return INSTANCE;}
 
         private void saveDrawInHistory(Bitmap bitmap)
         {
@@ -61,8 +66,7 @@ namespace Paint
             if (drawHistory.Count < 5) return;
             var array = drawHistory.ToArray();
             array.Skip(Math.Max(0,array.Length-5));
-            drawHistory = new Stack<Bitmap>(array);
-            */
+            drawHistory = new Stack<Bitmap>(array);*/
         }
 
         private void CopyToClipboard(Rectangle src_rect)
@@ -120,7 +124,11 @@ namespace Paint
                         prevPoint = currentPoint;
                         currentPoint = e.Location;
                         eraser.Width = (float) numericUpDown1.Value;
-                        graphics.DrawLine(eraser, prevPoint, currentPoint);
+                        pw2 = (int)Math.Max(1, pen.Width / 2);
+                        using (var brush = new SolidBrush(eraser.Color))
+                        {
+                            graphics.FillRectangle(brush, currentPoint.X - pw2, currentPoint.Y - pw2, eraser.Width, eraser.Width);
+                        }
                         break;
                     case Tool.Circle:
                         currentPoint = e.Location;
@@ -185,14 +193,15 @@ namespace Paint
                 case Tool.Text:
                     TextBox textBox = new TextBox();
                     textBox.Location = currentPoint;
-                    textBox.Size = new Size(50, (int)pen.Width);
+                    textBox.Size = new Size(50, (int)numericUpDown1.Value * 2);
                     textBox.Font = new Font("Microsoft Sans Serif", pen.Width, FontStyle.Regular, GraphicsUnit.Point, 204);
+                    textBox.Multiline = true;
                     textBox.KeyDown += (o, args) =>
                     {
                         if (args.KeyCode == Keys.Enter)
                         {
                             graphics.DrawString(textBox.Text, textBox.Font, new SolidBrush(color),
-                                new RectangleF(textBox.Location.X, textBox.Location.Y, textBox.TextLength * (int)pen.Width, textBox.Height));
+                                new RectangleF(textBox.Location.X, textBox.Location.Y, textBox.Right * (int)numericUpDown1.Value * 2, textBox.Height));
                             pictureBox1.Refresh();
                             Controls.Remove(textBox);
                         }
@@ -200,7 +209,7 @@ namespace Paint
                     textBox.Leave += (o, args) =>
                     {
                         graphics.DrawString(textBox.Text, textBox.Font, new SolidBrush(color),
-                            new RectangleF(textBox.Location.X, textBox.Location.Y, textBox.TextLength * (int)pen.Width, textBox.Height));
+                            new RectangleF(textBox.Location.X, textBox.Location.Y, textBox.Right * (int)numericUpDown1.Value * 2, textBox.Height));
                         pictureBox1.Refresh();
                         Controls.Remove(textBox);
                     };
@@ -458,6 +467,23 @@ namespace Paint
 
             selectedImage = null;
             selectedGraphics = null;
+        }
+        
+        private void создатьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            graphics.Clear(Color.White);
+            pictureBox1.Refresh();
+        }
+        
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            DialogResult exitMessageResult = MessageBox.Show("Вы уверены что хотите закрыть приложение, не сохранив изображение","Внимание",MessageBoxButtons.YesNo);
+            if (exitMessageResult == DialogResult.No) e.Cancel = true;
+        }
+
+        private void шаблоныToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
 
         private void button11_Click(object sender, EventArgs e)
